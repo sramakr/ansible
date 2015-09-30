@@ -1,0 +1,31 @@
+---
+- hosts: logstash
+  remote_user: clduser
+  tasks:
+  - name: remove novalocal from hostname
+    hostname: name={{ansible_hostname}}
+    notify:
+      - restart logstash
+  - name: add to /etc/hosts
+    template: src=/opt/ansible/hosts dest=/etc/hosts
+  - name: install java
+    yum: name=java-1.7.0-openjdk state=present update_cache=yes
+  - name: install logstash 5.2
+    yum: name=https://download.elastic.co/logstash/logstash/packages/centos/logstash-1.5.2-1.noarch.rpm state=present  update_cache=yes
+  - name: write the logstash config file
+    template: src=/opt/ansible/logstash dest=/etc/sysconfig/logstash
+    notify:
+      - restart logstash
+  - name: write the logstash config file
+    template: src=/opt/ansible/logstash.conf dest=/etc/logstash/conf.d/logstash-ipcdn.conf
+    notify:
+      - restart logstash
+  - name: write the logstash service file
+    template: src=/opt/ansible/etc/logstash dest=/etc/init.d/logstash
+    notify:
+      - restart logstash
+  - name: ensure logstash is running (and enable it at boot)
+    service: name=logstash state=started enabled=yes
+  handlers:
+    - name: restart logstash
+      service: name=logstash state=restarted
