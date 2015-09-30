@@ -1,6 +1,5 @@
 ---
-- hosts: logstash
-  remote_user: clduser
+- remote_user: clduser
   tasks:
   - name: remove novalocal from hostname
     hostname: name={{ansible_hostname}}
